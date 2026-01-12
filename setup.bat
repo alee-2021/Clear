@@ -2,7 +2,7 @@
 REM =============================================================================
 REM MINI-MIND SETUP SCRIPT (Windows)
 REM =============================================================================
-REM This script installs all dependencies needed to run Mini-Mind.
+REM This script installs all dependencies needed to run Clear.
 REM
 REM Usage: Double-click this file or run: setup.bat
 REM
@@ -13,7 +13,7 @@ REM   3. Tells you how to start the app
 REM =============================================================================
 
 echo ========================================
-echo         Mini-Mind Setup
+echo         Clear Setup
 echo ========================================
 echo.
 
@@ -59,7 +59,7 @@ echo ========================================
 echo       Setup Complete!
 echo ========================================
 echo.
-echo To start Mini-Mind:
+echo To start Clear:
 echo.
 echo   1. Run: start.bat
 echo      (or manually: venv\Scripts\activate then python assistant.py)

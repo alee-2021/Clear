@@ -2,11 +2,11 @@
 REM =============================================================================
 REM MINI-MIND START SCRIPT (Windows)
 REM =============================================================================
-REM Double-click this file to start Mini-Mind!
+REM Double-click this file to start Clear!
 REM =============================================================================
 
 echo ========================================
-echo    Starting Mini-Mind...
+echo    Starting Clear...
 echo ========================================
 echo.
 

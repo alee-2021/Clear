@@ -1,6 +1,6 @@
 """
 =============================================================================
-MINI-MIND: Your Personal Contextual Task Assistant (Multi-User Edition)
+CLEAR: Your Personal Contextual Task Assistant (Multi-User Edition)
 =============================================================================
 This is the backend server that powers Mini-Mind. It uses:
 - FastAPI: A modern, fast web framework for building APIs
@@ -45,7 +45,7 @@ import os
 SECRET_KEY = os.environ.get("SECRET_KEY", secrets.token_hex(32))
 
 # Database file
-DATABASE_NAME = os.environ.get("DATABASE_PATH", "mini_mind.db")
+DATABASE_NAME = os.environ.get("DATABASE_PATH", "clear.db")
 
 # Token expiration (7 days)
 TOKEN_EXPIRATION_DAYS = 7
@@ -538,7 +538,7 @@ def process_natural_language(text: str, user_id: int) -> AssistantResponse:
 # =============================================================================
 
 app = FastAPI(
-    title="Mini-Mind",
+    title="Clear",
     description="Your Personal Contextual Task Assistant",
     version="2.0.0"
 )
@@ -561,7 +561,7 @@ app.add_middleware(
 async def startup_event():
     """Initialize database on startup."""
     initialize_database()
-    print("Mini-Mind is starting up...")
+    print("Clear is starting up...")
     print("Database initialized!")
 
 
@@ -571,7 +571,7 @@ async def serve_frontend():
     """Serve the main HTML file."""
     if os.path.exists("index.html"):
         return FileResponse("index.html")
-    return {"message": "Mini-Mind API is running. Frontend not found."}
+    return {"message": "Clear API is running. Frontend not found."}
 
 
 # -----------------------------------------------------------------------------
@@ -747,7 +747,7 @@ if __name__ == "__main__":
     import uvicorn
 
     print("=" * 60)
-    print("MINI-MIND - Your Personal Task Assistant")
+    print("CLEAR - Your Personal Task Assistant")
     print("=" * 60)
     print()
     print("Starting server at http://localhost:8000")

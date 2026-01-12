@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini-Mind | Your Personal Task Assistant</title>
+    <title>Clear | Your Personal Task Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -51,9 +51,9 @@
         ================================================================ -->
         <header class="text-center mb-8">
             <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-mind-blue to-blue-600 rounded-2xl shadow-lg mb-4">
-                <span class="text-3xl">🧠</span>
+                <span class="text-3xl">✓</span>
             </div>
-            <h1 class="text-3xl font-bold text-mind-dark mb-2">Mini-Mind</h1>
+            <h1 class="text-3xl font-bold text-mind-dark mb-2">Clear</h1>
             <p class="text-mind-gray">Your personal task assistant</p>
 
             <!-- User info (shown when logged in) -->
@@ -142,7 +142,7 @@
                 <!-- Response Area -->
                 <div id="response" class="mt-4 hidden">
                     <div class="flex items-start gap-3 p-3 bg-blue-50 rounded-xl">
-                        <span class="text-xl">🧠</span>
+                        <span class="text-xl">✓</span>
                         <p id="responseText" class="text-mind-dark"></p>
                     </div>
                 </div>
@@ -179,7 +179,7 @@
 
         <!-- Footer -->
         <footer class="mt-8 text-center text-sm text-mind-gray">
-            <p>Mini-Mind v2.0 | Multi-User Edition</p>
+            <p>Clear v2.0</p>
         </footer>
     </div>
 
@@ -197,8 +197,8 @@
         // STATE
         // =================================================================
 
-        let authToken = localStorage.getItem('mini_mind_token');
-        let currentUsername = localStorage.getItem('mini_mind_username');
+        let authToken = localStorage.getItem('clear_token');
+        let currentUsername = localStorage.getItem('clear_username');
 
         // =================================================================
         // DOM ELEMENTS
@@ -271,8 +271,8 @@
                 // Save token and username
                 authToken = data.token;
                 currentUsername = data.username;
-                localStorage.setItem('mini_mind_token', authToken);
-                localStorage.setItem('mini_mind_username', currentUsername);
+                localStorage.setItem('clear_token', authToken);
+                localStorage.setItem('clear_username', currentUsername);
 
                 // Show app
                 showApp();
@@ -304,8 +304,8 @@
                 // Save token and username (auto-login after registration)
                 authToken = data.token;
                 currentUsername = data.username;
-                localStorage.setItem('mini_mind_token', authToken);
-                localStorage.setItem('mini_mind_username', currentUsername);
+                localStorage.setItem('clear_token', authToken);
+                localStorage.setItem('clear_username', currentUsername);
 
                 // Show app
                 showApp();
@@ -318,8 +318,8 @@
         function logout() {
             authToken = null;
             currentUsername = null;
-            localStorage.removeItem('mini_mind_token');
-            localStorage.removeItem('mini_mind_username');
+            localStorage.removeItem('clear_token');
+            localStorage.removeItem('clear_username');
             showAuth();
         }
 
@@ -450,7 +450,7 @@
 
             } catch (error) {
                 responseText.classList.remove('thinking');
-                showResponse('Could not connect to Mini-Mind.', true);
+                showResponse('Could not connect to Clear.', true);
             }
         }
 

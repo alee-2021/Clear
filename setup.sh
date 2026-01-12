@@ -2,7 +2,7 @@
 # =============================================================================
 # MINI-MIND SETUP SCRIPT
 # =============================================================================
-# This script installs all dependencies needed to run Mini-Mind.
+# This script installs all dependencies needed to run Clear.
 #
 # Usage:
 #   On Mac/Linux: bash setup.sh
@@ -15,7 +15,7 @@
 # =============================================================================
 
 echo "========================================"
-echo "🧠 Mini-Mind Setup"
+echo "🧠 Clear Setup"
 echo "========================================"
 echo ""
 
@@ -69,7 +69,7 @@ echo "========================================"
 echo "✅ Setup Complete!"
 echo "========================================"
 echo ""
-echo "To start Mini-Mind:"
+echo "To start Clear:"
 echo ""
 echo "  1. Activate the virtual environment:"
 if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]]; then

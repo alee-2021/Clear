@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini-Mind | Your Personal Task Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'mind-blue': '#007AFF',
+                        'mind-gray': '#8E8E93',
+                        'mind-light': '#F2F2F7',
+                        'mind-dark': '#1C1C1E',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        html { scroll-behavior: smooth; }
+        .task-list::-webkit-scrollbar { width: 6px; }
+        .task-list::-webkit-scrollbar-track { background: transparent; }
+        .task-list::-webkit-scrollbar-thumb { background: #D1D1D6; border-radius: 3px; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .task-item { animation: slideIn 0.3s ease-out; }
+        .task-done .task-text { text-decoration: line-through; color: #8E8E93; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .thinking { animation: pulse 1.5s infinite; }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+    </style>
+</head>
+
+<body class="bg-mind-light min-h-screen">
+    <div class="max-w-2xl mx-auto px-4 py-8">
+
+        <!-- ================================================================
+        HEADER
+        ================================================================ -->
+        <header class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-mind-blue to-blue-600 rounded-2xl shadow-lg mb-4">
+                <span class="text-3xl">🧠</span>
+            </div>
+            <h1 class="text-3xl font-bold text-mind-dark mb-2">Mini-Mind</h1>
+            <p class="text-mind-gray">Your personal task assistant</p>
+
+            <!-- User info (shown when logged in) -->
+            <div id="userInfo" class="hidden mt-4">
+                <span class="text-sm text-mind-gray">Logged in as </span>
+                <span id="usernameDisplay" class="text-sm font-medium text-mind-blue"></span>
+                <button onclick="logout()" class="ml-2 text-sm text-red-500 hover:text-red-600">Logout</button>
+            </div>
+        </header>
+
+        <!-- ================================================================
+        AUTH FORMS (shown when not logged in)
+        ================================================================ -->
+        <div id="authSection" class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+            <!-- Tab buttons -->
+            <div class="flex mb-6 bg-mind-light rounded-xl p-1">
+                <button id="loginTab" onclick="showTab('login')" class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all bg-white text-mind-dark shadow-sm">
+                    Login
+                </button>
+                <button id="registerTab" onclick="showTab('register')" class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all text-mind-gray">
+                    Create Account
+                </button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-mind-dark mb-1">Username</label>
+                    <input type="text" id="loginUsername" required minlength="3"
+                        class="w-full px-4 py-3 bg-mind-light rounded-xl text-mind-dark placeholder-mind-gray focus:outline-none focus:ring-2 focus:ring-mind-blue focus:bg-white transition-all"
+                        placeholder="Enter your username">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-mind-dark mb-1">Password</label>
+                    <input type="password" id="loginPassword" required minlength="6"
+                        class="w-full px-4 py-3 bg-mind-light rounded-xl text-mind-dark placeholder-mind-gray focus:outline-none focus:ring-2 focus:ring-mind-blue focus:bg-white transition-all"
+                        placeholder="Enter your password">
+                </div>
+                <button type="submit" class="w-full py-3 bg-mind-blue text-white rounded-xl font-medium hover:bg-blue-600 active:scale-98 transition-all">
+                    Login
+                </button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-sm font-medium text-mind-dark mb-1">Choose a Username</label>
+                    <input type="text" id="registerUsername" required minlength="3"
+                        class="w-full px-4 py-3 bg-mind-light rounded-xl text-mind-dark placeholder-mind-gray focus:outline-none focus:ring-2 focus:ring-mind-blue focus:bg-white transition-all"
+                        placeholder="At least 3 characters">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-mind-dark mb-1">Choose a Password</label>
+                    <input type="password" id="registerPassword" required minlength="6"
+                        class="w-full px-4 py-3 bg-mind-light rounded-xl text-mind-dark placeholder-mind-gray focus:outline-none focus:ring-2 focus:ring-mind-blue focus:bg-white transition-all"
+                        placeholder="At least 6 characters">
+                </div>
+                <button type="submit" class="w-full py-3 bg-mind-blue text-white rounded-xl font-medium hover:bg-blue-600 active:scale-98 transition-all">
+                    Create Account
+                </button>
+            </form>
+
+            <!-- Auth error message -->
+            <div id="authError" class="hidden mt-4 p-3 bg-red-50 rounded-xl text-red-600 text-sm"></div>
+        </div>
+
+        <!-- ================================================================
+        MAIN APP (shown when logged in)
+        ================================================================ -->
+        <div id="appSection" class="hidden">
+            <!-- Chat Input -->
+            <div class="bg-white rounded-2xl shadow-sm p-4 mb-6 fade-in">
+                <form id="chatForm" class="flex gap-3">
+                    <input type="text" id="userInput"
+                        placeholder="Try: 'Remind me to call mom tomorrow'"
+                        class="flex-1 px-4 py-3 bg-mind-light rounded-xl text-mind-dark placeholder-mind-gray focus:outline-none focus:ring-2 focus:ring-mind-blue focus:bg-white transition-all"
+                        autocomplete="off">
+                    <button type="submit" class="px-6 py-3 bg-mind-blue text-white rounded-xl font-medium hover:bg-blue-600 active:scale-95 transition-all flex items-center gap-2">
+                        <span>Send</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </button>
+                </form>
+
+                <!-- Response Area -->
+                <div id="response" class="mt-4 hidden">
+                    <div class="flex items-start gap-3 p-3 bg-blue-50 rounded-xl">
+                        <span class="text-xl">🧠</span>
+                        <p id="responseText" class="text-mind-dark"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="flex gap-2 mb-6 overflow-x-auto pb-2 fade-in">
+                <button onclick="sendCommand('Show my tasks')" class="px-4 py-2 bg-white rounded-full text-sm text-mind-gray hover:text-mind-blue hover:bg-blue-50 transition-all whitespace-nowrap shadow-sm">
+                    📋 Show all tasks
+                </button>
+                <button onclick="sendCommand('What\\'s on my list for today?')" class="px-4 py-2 bg-white rounded-full text-sm text-mind-gray hover:text-mind-blue hover:bg-blue-50 transition-all whitespace-nowrap shadow-sm">
+                    📅 Today's tasks
+                </button>
+                <button onclick="sendCommand('Show completed tasks')" class="px-4 py-2 bg-white rounded-full text-sm text-mind-gray hover:text-mind-blue hover:bg-blue-50 transition-all whitespace-nowrap shadow-sm">
+                    ✅ Completed
+                </button>
+            </div>
+
+            <!-- Task List -->
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden fade-in">
+                <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                    <h2 class="font-semibold text-mind-dark">Your Tasks</h2>
+                    <span id="taskCount" class="text-sm text-mind-gray">0 tasks</span>
+                </div>
+                <div id="taskList" class="task-list max-h-96 overflow-y-auto">
+                    <div id="emptyState" class="py-12 text-center">
+                        <span class="text-4xl mb-4 block">✨</span>
+                        <p class="text-mind-gray">No tasks yet!</p>
+                        <p class="text-sm text-mind-gray mt-1">Try adding one above</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-8 text-center text-sm text-mind-gray">
+            <p>Mini-Mind v2.0 | Multi-User Edition</p>
+        </footer>
+    </div>
+
+    <script>
+        // =================================================================
+        // CONFIGURATION
+        // =================================================================
+
+        // API URL - automatically detects if running locally or deployed
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8000'
+            : window.location.origin;
+
+        // =================================================================
+        // STATE
+        // =================================================================
+
+        let authToken = localStorage.getItem('mini_mind_token');
+        let currentUsername = localStorage.getItem('mini_mind_username');
+
+        // =================================================================
+        // DOM ELEMENTS
+        // =================================================================
+
+        const authSection = document.getElementById('authSection');
+        const appSection = document.getElementById('appSection');
+        const userInfo = document.getElementById('userInfo');
+        const usernameDisplay = document.getElementById('usernameDisplay');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const loginTab = document.getElementById('loginTab');
+        const registerTab = document.getElementById('registerTab');
+        const authError = document.getElementById('authError');
+        const chatForm = document.getElementById('chatForm');
+        const userInput = document.getElementById('userInput');
+        const responseDiv = document.getElementById('response');
+        const responseText = document.getElementById('responseText');
+        const taskList = document.getElementById('taskList');
+        const taskCount = document.getElementById('taskCount');
+        const emptyState = document.getElementById('emptyState');
+
+        // =================================================================
+        // AUTH FUNCTIONS
+        // =================================================================
+
+        function showTab(tab) {
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                loginTab.classList.add('bg-white', 'text-mind-dark', 'shadow-sm');
+                loginTab.classList.remove('text-mind-gray');
+                registerTab.classList.remove('bg-white', 'text-mind-dark', 'shadow-sm');
+                registerTab.classList.add('text-mind-gray');
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                registerTab.classList.add('bg-white', 'text-mind-dark', 'shadow-sm');
+                registerTab.classList.remove('text-mind-gray');
+                loginTab.classList.remove('bg-white', 'text-mind-dark', 'shadow-sm');
+                loginTab.classList.add('text-mind-gray');
+            }
+            authError.classList.add('hidden');
+        }
+
+        function showAuthError(message) {
+            authError.textContent = message;
+            authError.classList.remove('hidden');
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showAuthError(data.detail || 'Login failed');
+                    return;
+                }
+
+                // Save token and username
+                authToken = data.token;
+                currentUsername = data.username;
+                localStorage.setItem('mini_mind_token', authToken);
+                localStorage.setItem('mini_mind_username', currentUsername);
+
+                // Show app
+                showApp();
+
+            } catch (error) {
+                showAuthError('Could not connect to server. Is it running?');
+            }
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showAuthError(data.detail || 'Registration failed');
+                    return;
+                }
+
+                // Save token and username (auto-login after registration)
+                authToken = data.token;
+                currentUsername = data.username;
+                localStorage.setItem('mini_mind_token', authToken);
+                localStorage.setItem('mini_mind_username', currentUsername);
+
+                // Show app
+                showApp();
+
+            } catch (error) {
+                showAuthError('Could not connect to server. Is it running?');
+            }
+        }
+
+        function logout() {
+            authToken = null;
+            currentUsername = null;
+            localStorage.removeItem('mini_mind_token');
+            localStorage.removeItem('mini_mind_username');
+            showAuth();
+        }
+
+        function showAuth() {
+            authSection.classList.remove('hidden');
+            appSection.classList.add('hidden');
+            userInfo.classList.add('hidden');
+        }
+
+        function showApp() {
+            authSection.classList.add('hidden');
+            appSection.classList.remove('hidden');
+            userInfo.classList.remove('hidden');
+            usernameDisplay.textContent = currentUsername;
+            loadTasks();
+            userInput.focus();
+        }
+
+        // =================================================================
+        // TASK FUNCTIONS
+        // =================================================================
+
+        function showResponse(message, isError = false) {
+            responseDiv.classList.remove('hidden');
+            responseText.textContent = message;
+            const container = responseDiv.querySelector('div');
+            container.className = isError
+                ? 'flex items-start gap-3 p-3 bg-red-50 rounded-xl'
+                : 'flex items-start gap-3 p-3 bg-blue-50 rounded-xl';
+            if (!isError) {
+                setTimeout(() => responseDiv.classList.add('hidden'), 5000);
+            }
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr + 'T00:00:00');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            if (date.getTime() === today.getTime()) return 'Today';
+            if (date.getTime() === tomorrow.getTime()) return 'Tomorrow';
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function renderTasks(tasks) {
+            const pendingTasks = tasks.filter(t => t.status === 'pending');
+            taskCount.textContent = `${pendingTasks.length} task${pendingTasks.length !== 1 ? 's' : ''}`;
+
+            if (pendingTasks.length === 0) {
+                emptyState.classList.remove('hidden');
+                const existingTasks = taskList.querySelectorAll('.task-item');
+                existingTasks.forEach(t => t.remove());
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            const existingTasks = taskList.querySelectorAll('.task-item');
+            existingTasks.forEach(t => t.remove());
+
+            pendingTasks.forEach(task => {
+                const taskElement = document.createElement('div');
+                taskElement.className = 'task-item group flex items-center gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors';
+                taskElement.dataset.id = task.id;
+
+                const checkbox = document.createElement('button');
+                checkbox.className = 'w-6 h-6 rounded-full border-2 border-mind-gray hover:border-mind-blue flex items-center justify-center transition-colors';
+                checkbox.onclick = () => toggleTask(task.id);
+
+                const content = document.createElement('div');
+                content.className = 'flex-1 min-w-0';
+
+                const taskText = document.createElement('p');
+                taskText.className = 'task-text text-mind-dark truncate';
+                taskText.textContent = task.content;
+
+                content.appendChild(taskText);
+
+                if (task.due_date) {
+                    const dateBadge = document.createElement('span');
+                    const friendlyDate = formatDate(task.due_date);
+                    const isOverdue = new Date(task.due_date) < new Date().setHours(0,0,0,0);
+                    dateBadge.className = `text-xs ${isOverdue ? 'text-red-500' : 'text-mind-gray'}`;
+                    dateBadge.textContent = friendlyDate;
+                    content.appendChild(dateBadge);
+                }
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'p-2 text-mind-gray hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all';
+                deleteBtn.onclick = () => deleteTask(task.id);
+                deleteBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>';
+
+                taskElement.appendChild(checkbox);
+                taskElement.appendChild(content);
+                taskElement.appendChild(deleteBtn);
+                taskList.insertBefore(taskElement, emptyState);
+            });
+        }
+
+        async function sendCommand(command) {
+            responseDiv.classList.remove('hidden');
+            responseText.textContent = 'Thinking...';
+            responseText.classList.add('thinking');
+
+            try {
+                const response = await fetch(`${API_URL}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ text: command })
+                });
+
+                if (response.status === 401) {
+                    logout();
+                    showAuthError('Session expired. Please login again.');
+                    return;
+                }
+
+                const data = await response.json();
+                responseText.classList.remove('thinking');
+                showResponse(data.message);
+
+                if (data.tasks) renderTasks(data.tasks);
+                if (data.action !== 'list') loadTasks();
+
+            } catch (error) {
+                responseText.classList.remove('thinking');
+                showResponse('Could not connect to Mini-Mind.', true);
+            }
+        }
+
+        async function loadTasks() {
+            try {
+                const response = await fetch(`${API_URL}/tasks`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+
+                const tasks = await response.json();
+                renderTasks(tasks);
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+            }
+        }
+
+        async function toggleTask(taskId) {
+            try {
+                const response = await fetch(`${API_URL}/tasks/${taskId}/toggle`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (response.ok) {
+                    loadTasks();
+                    showResponse('Task updated!');
+                }
+            } catch (error) {
+                showResponse('Failed to update task', true);
+            }
+        }
+
+        async function deleteTask(taskId) {
+            try {
+                const response = await fetch(`${API_URL}/tasks/${taskId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (response.ok) {
+                    loadTasks();
+                    showResponse('Task deleted!');
+                }
+            } catch (error) {
+                showResponse('Failed to delete task', true);
+            }
+        }
+
+        // =================================================================
+        // EVENT LISTENERS
+        // =================================================================
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const command = userInput.value.trim();
+            if (!command) return;
+            sendCommand(command);
+            userInput.value = '';
+        });
+
+        // =================================================================
+        // INITIALIZATION
+        // =================================================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (authToken) {
+                // Verify token is still valid
+                fetch(`${API_URL}/tasks`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                }).then(response => {
+                    if (response.ok) {
+                        showApp();
+                    } else {
+                        logout();
+                    }
+                }).catch(() => {
+                    // Server not reachable, show auth anyway
+                    showAuth();
+                });
+            } else {
+                showAuth();
+            }
+        });
+    </script>
+</body>
+</html>

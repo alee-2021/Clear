@@ -1,0 +1,19 @@
+# Virtual environment
+venv/
+.venv/
+
+# Database (will be created on server)
+*.db
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
